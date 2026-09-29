@@ -32,3 +32,20 @@ test('mobile layout stays within the viewport and navigation is usable', async (
   await page.getByRole('button', { name: 'Tide forecast', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Tide timeline', exact: true })).toBeVisible();
 });
+
+test('map tiles use the platform endpoint and a failed map can be retried', async ({ page }) => {
+  let unavailable = true;
+  const pixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==', 'base64');
+  await page.route('**/api/basemap?**', async route => {
+    expect(new URL(route.request().url()).searchParams.has('key')).toBe(false);
+    if (unavailable) await route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"The basemap is not configured."}' });
+    else await route.fulfill({ status: 200, contentType: 'image/png', body: pixel });
+  });
+  await page.goto('/');
+  await expect(page.getByText('Some map tiles couldn’t load')).toBeVisible({ timeout: 45000 });
+  unavailable = false;
+  await page.getByRole('button', { name: 'Retry loading map tiles' }).click();
+  await expect(page.locator('.leaflet-tile-loaded').first()).toBeVisible();
+  await expect(page.getByText('Some map tiles couldn’t load')).not.toBeVisible();
+  await expect(page.getByText('NOAA tide station', { exact: true })).toBeVisible();
+});
