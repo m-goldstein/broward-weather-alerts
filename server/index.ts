@@ -2,10 +2,18 @@ import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getDashboard } from './forecast.ts';
+import { getBasemapTile } from './basemap.ts';
 
 const app = express();
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+app.get('/api/basemap', async (req, res) => {
+  const request = new Request(new URL(req.originalUrl, `${req.protocol}://${req.get('host')}`));
+  const result = await getBasemapTile(request);
+  res.status(result.status);
+  result.headers.forEach((value, name) => res.set(name, value));
+  res.send(Buffer.from(await result.arrayBuffer()));
+});
 app.get('/api/dashboard', async (_req, res) => {
   try { res.set('Cache-Control', 'no-store').json(await getDashboard()); }
   catch { res.status(503).json({ error: 'Unable to assemble the forecast. Please try again shortly.' }); }
