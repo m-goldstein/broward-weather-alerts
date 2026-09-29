@@ -5,6 +5,6 @@
   "outputDirectory": "dist",
   "functions": {
     "api/dashboard.ts": { "maxDuration": 60 },
-    "api/basemap.ts": { "maxDuration": 15 }
+    "api/basemap.ts": { "maxDuration": 30 }
   }
 }

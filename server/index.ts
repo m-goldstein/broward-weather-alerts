@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { getDashboard } from './forecast.ts';
+import { GET as getDashboardResponse } from '../api/dashboard.ts';
 import { getBasemapTile } from './basemap.ts';
 
 const app = express();
@@ -14,9 +14,11 @@ app.get('/api/basemap', async (req, res) => {
   result.headers.forEach((value, name) => res.set(name, value));
   res.send(Buffer.from(await result.arrayBuffer()));
 });
-app.get('/api/dashboard', async (_req, res) => {
-  try { res.set('Cache-Control', 'no-store').json(await getDashboard()); }
-  catch { res.status(503).json({ error: 'Unable to assemble the forecast. Please try again shortly.' }); }
+app.get('/api/dashboard', async (req, res) => {
+  const result = await getDashboardResponse(new Request(new URL(req.originalUrl, `${req.protocol}://${req.get('host')}`)));
+  res.status(result.status);
+  result.headers.forEach((value, name) => res.set(name, value));
+  res.send(await result.text());
 });
 app.use(express.static(path.join(root, 'dist')));
 app.get('/{*splat}', (_req, res) => res.sendFile(path.join(root, 'dist', 'index.html')));

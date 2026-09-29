@@ -1,9 +1,14 @@
 import { test } from 'node:test';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import assert from 'node:assert/strict';
 import type { DashboardData } from '../shared/types.ts';
 
 test('Vercel handlers serve forecast JSON without starting a server', async () => {
   process.env.VERCEL = '1';
+  const cacheDir = await mkdtemp(path.join(tmpdir(), 'tidewatch-test-'));
+  process.env.TIDEWATCH_CACHE_DIR = cacheDir;
   const originalFetch = globalThis.fetch;
   const start = Math.floor(Date.now() / 3600000) * 3600000;
   const iso = (n: number) => new Date(start + n * 3600000).toISOString();
@@ -34,5 +39,5 @@ test('Vercel handlers serve forecast JSON without starting a server', async () =
     assert.equal(data.hours[0].chance, 60);
     assert.ok(Math.abs(data.hours.reduce((n, h) => n + h.rain!, 0) - 1) < 1e-10);
     assert.equal(requests, 5, 'concurrent requests should share one provider refresh');
-  } finally { globalThis.fetch = originalFetch; }
+  } finally { globalThis.fetch = originalFetch; await rm(cacheDir, { recursive: true, force: true }); }
 });

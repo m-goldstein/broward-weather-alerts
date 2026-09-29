@@ -1,6 +1,7 @@
+import { LocationError, resolveZipPoint } from './location.ts';
 const MIN_ZOOM = 11;
 const MAX_ZOOM = 19;
-const COVERAGE = { west: -80.5, east: -79.75, south: 25.7, north: 26.35 };
+
 
 function error(message: string, status: number): Response {
   return Response.json({ error: message }, { status, headers: { 'Cache-Control': 'no-store' } });
@@ -17,12 +18,16 @@ export async function getBasemapTile(request: Request): Promise<Response> {
   if (!Number.isInteger(z) || z < MIN_ZOOM || z > MAX_ZOOM || !Number.isInteger(x) || !Number.isInteger(y) || x < 0 || y < 0 || x >= 2 ** z || y >= 2 ** z || (retina !== null && !['0', '1'].includes(retina))) {
     return error('Invalid map tile coordinates.', 400);
   }
-  // Keep the tile endpoint scoped to the Hollywood coastal map.
+  let location;
+  try { location = await resolveZipPoint(url.searchParams.get('zip') ?? undefined); }
+  catch (e) { return error(e instanceof LocationError ? e.message : 'Map location unavailable.', e instanceof LocationError ? e.status : 503); }
+  const COVERAGE = { west: location.lon - 0.4, east: location.lon + 0.4, south: location.lat - 0.4, north: location.lat + 0.4 };
+  // Keep the tile endpoint scoped to the selected ZIP's map.
   const n = 2 ** z;
   const tileLon = (column: number) => column / n * 360 - 180;
   const tileLat = (row: number) => Math.atan(Math.sinh(Math.PI * (1 - 2 * row / n))) * 180 / Math.PI;
   if (tileLon(x + 1) < COVERAGE.west || tileLon(x) > COVERAGE.east || tileLat(y) < COVERAGE.south || tileLat(y + 1) > COVERAGE.north) {
-    return error('Tile is outside the Hollywood map area.', 404);
+    return error('Tile is outside the selected ZIP map area.', 404);
   }
   const key = process.env.CARTO_API_KEY?.trim();
   if (!key) return error('The basemap is not configured.', 503);
