@@ -39,7 +39,7 @@ async function makeDashboard(): Promise<DashboardData> {
   const tidesPromise = fetchSource('tides', `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?${tideParams}`, d => Array.isArray(d.predictions) && d.predictions.length > 0);
   const alertsPromise = fetchSource('alerts', `https://api.weather.gov/alerts/active?point=${location.lat},${location.lon}`, d => Array.isArray(d.features));
   const point = await pointPromise;
-  const unavailable = { data: null, source: { status: 'unavailable' as const, fetchedAt: null, error: 'NWS location lookup unavailable' } };
+  const unavailable: { data: null; source: SourceStatus } = { data: null, source: { status: 'unavailable', fetchedAt: null, error: 'NWS location lookup unavailable' } };
   const [tideResult, hourlyResult, gridResult, alertsResult] = await Promise.all([
     tidesPromise,
     point.data ? fetchSource('hourly', point.data.properties.forecastHourly, d => Array.isArray(d.properties?.periods) && d.properties.periods.length > 0) : Promise.resolve(unavailable),
