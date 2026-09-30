@@ -1,3 +1,4 @@
+import { useLanguage } from '../LanguageContext';
 import { useEffect, useRef, useState } from 'react';
 import { MapPin, RefreshCw } from 'lucide-react';
 import L from 'leaflet';
@@ -5,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import type { ForecastLocation } from '../../shared/types';
 
 export default function LocalMap({ location }: { location: ForecastLocation }) {
+  const { t } = useLanguage();
   const container = useRef<HTMLDivElement>(null);
   const tileLayer = useRef<L.TileLayer | null>(null);
   const [mapError, setMapError] = useState(false);
@@ -35,5 +37,5 @@ export default function LocalMap({ location }: { location: ForecastLocation }) {
     const observer = new ResizeObserver(() => map.invalidateSize()); observer.observe(container.current);
     return () => { observer.disconnect(); tiles.off(); tileLayer.current = null; map.remove(); };
   }, [location]);
-  return <div className="local-map-shell"><div className="local-map" ref={container} aria-label={`Map of the ${location.name} weather forecast point${location.station ? ' and NOAA tide prediction station' : ''}`}/>{mapError && <div className="map-error" role="status"><MapPin size={17}/><span><b>Some map tiles couldn’t load</b><small>Tide and rainfall forecasts are still available.</small></span><button onClick={() => { setMapError(false); tileLayer.current?.redraw(); }} aria-label="Retry loading map tiles"><RefreshCw size={14}/></button></div>}</div>;
+  return <div className="local-map-shell"><div className="local-map" ref={container} aria-label={`Map of the ${location.name} weather forecast point${location.station ? t(" and NOAA tide prediction station") : ''}`}/>{mapError && <div className="map-error" role="status"><MapPin size={17}/><span><b>{t("Some map tiles couldn’t load")}</b><small>{t("Tide and rainfall forecasts are still available.")}</small></span><button onClick={() => { setMapError(false); tileLayer.current?.redraw(); }} aria-label={t("Retry loading map tiles")}><RefreshCw size={14}/></button></div>}</div>;
 }
