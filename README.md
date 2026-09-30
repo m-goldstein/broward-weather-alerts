@@ -17,7 +17,7 @@ Open http://localhost:5173. The development script runs Vite and the local API t
 
 The checked-in `vercel.json` uses the Vite build and `dist` output. The files in `api/` run as Vercel Node.js functions. NOAA/NWS forecasts do not require API keys. The backend uses temporary scratch storage on Vercel for optional cached snapshots; cache failures do not prevent forecast responses. Caches are best effort and are not durable across instances.
 
-Commit and push all source files, including `src/styles.css`, `api/`, `server/forecast.ts`, and `vercel.json`. Redeploying an older commit does not include new local fixes.
+Commit and push all source files, including `src/` (and its `src/locales/es.ts` translation catalog), `api/`, `server/forecast.ts`, and `vercel.json`. Redeploying an older commit does not include new local fixes.
 
 ### CARTO basemap
 
@@ -47,6 +47,12 @@ Provider caches are keyed by ZIP/station and provider URL, independently of pers
 
 A fixed Home / Tides / Rain / Outlook / More bar provides direct phone navigation. More opens the calendar, preparation guide, and settings. Tide and hourly rainfall lists use readable cards on phones and tables on desktop. Charts resize to their container and expose a touch and keyboard hour slider. The blue wave identity, safe-area spacing, visible focus states, and reduced-motion support extend across the interface.
 
+## English and Spanish
+
+Use the language button in the top-right corner to switch between **Español** and **English** (ES / EN on phones). Navigation, forecast controls, preparation guides, settings, notifications, error messages, map labels, and CSV headings follow the selected language. Dates and times use the selected locale while retaining Eastern time and the existing measurement units.
+
+The first visit follows the browser's preferred supported language. The selection is saved in `tidewatch.language.v1`, independently of ZIP-specific settings. Switching languages preserves the selected page, location, thresholds, and checklist. Known short weather descriptions are translated locally. Official NWS advisory text retains its original English wording, marked with a Spanish source-language note in the advisory dialog.
+
 ## Data and planning rules
 
 - NOAA Hollywood Beach station **8722979** supplies high/low astronomical tide predictions in feet MLLW. Intermediate tide heights use cosine interpolation, not measured water levels.
@@ -68,4 +74,4 @@ npm test
 npm run test:e2e
 ```
 
-Unit tests cover missing data, rain interval accounting, tide interpolation, overlap windows, daylight saving dates, serverless API response assembly, ZIP validation, per-location cache isolation, coastal gridded weather fallback, and inland tide availability. API tests use temporary cache directories and fixture providers. Browser tests use fixture forecasts to verify navigation, CSV export, map retry, phone layout, ZIP search errors, reload persistence, and settings isolation across ZIPs and independent browser contexts. Install a Playwright browser with `npx playwright install chromium` if needed.
+Unit tests cover missing data, rain interval accounting, tide interpolation, overlap windows, daylight saving dates, serverless API response assembly, ZIP validation, per-location cache isolation, coastal gridded weather fallback, inland tide availability, language defaults, and translation interpolation. API tests use temporary cache directories and fixture providers. Browser tests use fixture forecasts to verify navigation, CSV export, map retry, phone layout, ZIP search errors, reload persistence, settings isolation, and English/Spanish switching across pages and devices. Install a Playwright browser with `npx playwright install chromium` if needed.

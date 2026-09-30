@@ -8,7 +8,7 @@ export type TranslationValues = Record<string, string | number>;
 
 export function translate(language: Language, message: string, values: TranslationValues = {}): string {
   const template = language === 'es' ? spanish[message] ?? message : message;
-  return template.replace(/\{(\w+)\}/g, (placeholder, key: string) => String(values[key] ?? placeholder));
+  return template.replace(/\{(\w+)\}/g, (placeholder: string, key: string) => String(values[key] ?? placeholder));
 }
 export function preferredLanguage(saved: unknown, browserLanguages: readonly string[]): Language {
   if (saved === 'en' || saved === 'es') return saved;
@@ -38,6 +38,7 @@ export function weatherDescription(language: Language, description: string): str
     'mostly cloudy': 'mayormente nublado', 'light rain': 'lluvia ligera',
     'heavy rain': 'lluvia intensa', 'patchy fog': 'niebla dispersa',
     'slight chance': 'ligera posibilidad de', 'chance of': 'posibilidad de',
+    'chance': 'posibilidad de',
     'showers': 'chubascos', 'sunny': 'soleado', 'clear': 'despejado',
     'cloudy': 'nublado', 'rain': 'lluvia', 'fog': 'niebla', 'haze': 'bruma',
     'windy': 'ventoso', 'breezy': 'con brisa', 'likely': 'probables',

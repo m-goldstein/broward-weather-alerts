@@ -23,7 +23,7 @@ export default function LocalMap({ location }: { location: ForecastLocation }) {
     const bounds = L.latLngBounds([[location.lat - 0.015, location.lon - 0.015], [location.lat + 0.015, location.lon + 0.015]]);
     if (location.stationLat !== null && location.stationLon !== null) bounds.extend([location.stationLat, location.stationLon]);
     map.fitBounds(bounds, { padding: [30, 30], maxZoom: 13 });
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    L.control.zoom({ position: 'bottomright', zoomInTitle: t('Zoom in'), zoomOutTitle: t('Zoom out') }).addTo(map);
     const icon = (name: string, station: boolean) => {
       const element = document.createElement('div'), dot = document.createElement('span'), label = document.createElement('span');
       dot.className = `pin-dot ${station ? 'station' : ''}`; label.className = 'pin-label'; label.textContent = name;
@@ -31,11 +31,11 @@ export default function LocalMap({ location }: { location: ForecastLocation }) {
       return L.divIcon({ className: 'map-pin', html: element, iconSize: [180, 32], iconAnchor: [9, 9] });
     };
     const popup = (text: string) => { const element = document.createElement('div'); element.textContent = text; return element; };
-    L.marker([location.lat, location.lon], { icon: icon(`${location.zip} forecast point`, false) }).addTo(map).bindPopup(popup(`Weather forecast point for ${location.name}, ZIP ${location.zip}. Forecasts represent a grid area, not an individual property.`));
-    if (location.stationLat !== null && location.stationLon !== null) L.marker([location.stationLat, location.stationLon], { icon: icon('NOAA tide station', true) }).addTo(map).bindPopup(popup(`${location.stationName} · NOAA ${location.station}. Predicted tides only; this is not an operating water-level sensor.`));
-    L.circle([location.lat, location.lon], { radius: 1000, color: '#2563b8', weight: 1, fillColor: '#3480cf', fillOpacity: 0.09, dashArray: '4 5' }).addTo(map).bindPopup('Illustrative 1 km radius around the forecast point. This is not a ZIP boundary or a flood extent.');
+    L.marker([location.lat, location.lon], { icon: icon(t('{zip} forecast point', { zip: location.zip }), false) }).addTo(map).bindPopup(popup(t('Weather forecast point for {location}, ZIP {zip}. Forecasts represent a grid area, not an individual property.', { location: location.name, zip: location.zip })));
+    if (location.stationLat !== null && location.stationLon !== null) L.marker([location.stationLat, location.stationLon], { icon: icon(t('NOAA tide station'), true) }).addTo(map).bindPopup(popup(t('{stationName} · NOAA {station}. Predicted tides only; this is not an operating water-level sensor.', { stationName: location.stationName ?? '', station: location.station ?? '' })));
+    L.circle([location.lat, location.lon], { radius: 1000, color: '#2563b8', weight: 1, fillColor: '#3480cf', fillOpacity: 0.09, dashArray: '4 5' }).addTo(map).bindPopup(popup(t('Illustrative 1 km radius around the forecast point. This is not a ZIP boundary or a flood extent.')));
     const observer = new ResizeObserver(() => map.invalidateSize()); observer.observe(container.current);
     return () => { observer.disconnect(); tiles.off(); tileLayer.current = null; map.remove(); };
-  }, [location]);
-  return <div className="local-map-shell"><div className="local-map" ref={container} aria-label={`Map of the ${location.name} weather forecast point${location.station ? t(" and NOAA tide prediction station") : ''}`}/>{mapError && <div className="map-error" role="status"><MapPin size={17}/><span><b>{t("Some map tiles couldn’t load")}</b><small>{t("Tide and rainfall forecasts are still available.")}</small></span><button onClick={() => { setMapError(false); tileLayer.current?.redraw(); }} aria-label={t("Retry loading map tiles")}><RefreshCw size={14}/></button></div>}</div>;
+  }, [location, t]);
+  return <div className="local-map-shell"><div className="local-map" ref={container} aria-label={t('Map of the {location} weather forecast point{station}', { location: location.name, station: location.station ? t(' and NOAA tide prediction station') : '' })}/>{mapError && <div className="map-error" role="status"><MapPin size={17}/><span><b>{t("Some map tiles couldn’t load")}</b><small>{t("Tide and rainfall forecasts are still available.")}</small></span><button onClick={() => { setMapError(false); tileLayer.current?.redraw(); }} aria-label={t("Retry loading map tiles")}><RefreshCw size={14}/></button></div>}</div>;
 }
