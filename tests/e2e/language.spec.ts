@@ -63,6 +63,9 @@ test('Spanish toggle fits small phones and mobile forecasts and navigation stay 
   const box = await toggle.boundingBox();
   expect(box!.x + box!.width).toBeLessThanOrEqual(320);
   expect(box!.height).toBeGreaterThanOrEqual(44);
+  const date = await page.locator('.date-button').boundingBox();
+  const alerts = await page.getByRole('button', { name: 'Configurar alertas', exact: true }).boundingBox();
+  expect(date!.x + date!.width <= alerts!.x || date!.y + date!.height <= alerts!.y).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   const scrubber = page.getByRole('slider', { name: 'Explorar hora del pronóstico' });
   await expect(scrubber).toHaveAttribute('aria-valuetext', /Marea:.*Lluvia:/);

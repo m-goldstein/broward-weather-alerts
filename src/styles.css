@@ -602,6 +602,9 @@ td b { color: #385f85; font-weight: 600; }
 @media (max-width: 360px) {
   main { padding-inline: 14px; }
   .topbar { padding-inline: 14px; }
+  .heading-actions { flex-wrap: wrap; gap: 8px; }
+  .heading-actions .button { padding-inline: 10px; gap: 6px; font-size: 12px; }
+  .heading-actions .date-control { flex-shrink: 0; }
   .welcome-copy { padding: 21px; }
   .metric-card { padding: 16px 12px; }
   .metric-label { font-size: 11px; }
