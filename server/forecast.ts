@@ -34,6 +34,16 @@ async function fetchSource(key: string, url: string, validate: (data: any) => bo
     return { data: cached?.data ?? null, source: { status: cached ? 'cached' : 'unavailable', fetchedAt: cached?.at ?? null, error: message, issuedAt: cached?.data?.properties?.updateTime ?? null } };
   }
 }
+export async function getTideForecast(location: ForecastLocation, start: number, end: number): Promise<{ tides: Tide[]; source: SourceStatus }> {
+  if (!location.station) return { tides: [], source: { status: 'unavailable', fetchedAt: null, error: 'No NOAA tide prediction station within 25 km of this ZIP.' } };
+  cacheLoaded ??= loadCache();
+  await cacheLoaded;
+  const date = (timestamp: number) => new Date(timestamp).toISOString().slice(0, 10).replaceAll('-', '');
+  const params = new URLSearchParams({ product: 'predictions', application: 'HollywoodTidewatch', begin_date: date(start), end_date: date(end), datum: 'MLLW', station: location.station, time_zone: 'gmt', units: 'english', interval: 'hilo', format: 'json' });
+  const result = await fetchSource(`tides:${location.station}`, `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?${params}`, d => Array.isArray(d.predictions) && d.predictions.length > 0);
+  const tides: Tide[] = (result.data?.predictions ?? []).filter((t: any) => ['H', 'L'].includes(t.type) && t.v !== null && t.v !== '' && Number.isFinite(Number(t.v)) && Number.isFinite(Date.parse(t.t.replace(' ', 'T') + ':00Z'))).map((t: any) => ({ time: t.t.replace(' ', 'T') + ':00Z', height: Number(t.v), type: t.type })).sort((a: Tide, b: Tide) => Date.parse(a.time) - Date.parse(b.time));
+  return { tides, source: result.source };
+}
 function gridValue(field: any, timestamp: number): number | null {
   const item = field?.values?.find((value: any) => {
     const [start, duration] = String(value.validTime).split('/');
@@ -43,10 +53,8 @@ function gridValue(field: any, timestamp: number): number | null {
 }
 async function makeDashboard(location: ForecastLocation): Promise<DashboardData> {
   const now = Date.now(), start = Math.floor(now / 3600000) * 3600000;
-  const date = (timestamp: number) => new Date(timestamp).toISOString().slice(0, 10).replaceAll('-', '');
-  const tideParams = new URLSearchParams({ product: 'predictions', application: 'HollywoodTidewatch', begin_date: date(start - 86400000), end_date: date(start + 8 * 86400000), datum: 'MLLW', station: location.station ?? '', time_zone: 'gmt', units: 'english', interval: 'hilo', format: 'json' });
   const pointPromise = fetchSource(`point:${location.zip}`, `https://api.weather.gov/points/${location.lat},${location.lon}`, d => !!d.properties?.forecastGridData);
-  const tidesPromise = location.station ? fetchSource(`tides:${location.station}`, `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?${tideParams}`, d => Array.isArray(d.predictions) && d.predictions.length > 0) : Promise.resolve({ data: null, source: { status: 'unavailable', fetchedAt: null, error: 'No NOAA tide prediction station within 25 km of this ZIP.' } as SourceStatus });
+  const tidesPromise = getTideForecast(location, start - 86400000, start + 8 * 86400000);
   const alertsPromise = fetchSource(`alerts:${location.zip}`, `https://api.weather.gov/alerts/active?point=${location.lat},${location.lon}`, d => Array.isArray(d.features));
   const point = await pointPromise;
   const unavailable: { data: null; source: SourceStatus } = { data: null, source: { status: 'unavailable', fetchedAt: null, error: 'NWS location lookup unavailable' } };
@@ -56,7 +64,7 @@ async function makeDashboard(location: ForecastLocation): Promise<DashboardData>
     point.data ? fetchSource(`grid:${location.zip}`, point.data.properties.forecastGridData, d => Array.isArray(d.properties?.quantitativePrecipitation?.values)) : Promise.resolve(unavailable),
     alertsPromise,
   ]);
-  const tides: Tide[] = (tideResult.data?.predictions ?? []).filter((t: any) => ['H', 'L'].includes(t.type) && Number.isFinite(Number(t.v))).map((t: any) => ({ time: t.t.replace(' ', 'T') + ':00Z', height: Number(t.v), type: t.type }));
+  const tides = tideResult.tides;
   const periods = hourlyResult.data?.properties?.periods ?? [];
   const precipitation = gridResult.data?.properties?.quantitativePrecipitation?.values ?? [];
   const grid = gridResult.data?.properties;

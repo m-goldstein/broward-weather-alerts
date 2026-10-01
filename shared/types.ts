@@ -20,3 +20,11 @@ export interface DashboardData {
 }
 export interface Preferences { tideThreshold: number; rainThreshold: number; chanceThreshold: number; notifications: boolean; leadHours: number }
 export interface RiskWindow { start: string; end: string; risk: Risk; maxTide: number; rain: number | null; chance: number | null; hours: number }
+export interface FloodCheckData {
+  generatedAt: string; requestedAt: string; location: ForecastLocation;
+  tide: number | null; nearbyHighTide: Tide | null;
+  rain: number | null; chance: number | null; rainThreeHours: number | null;
+  rainStartsAt: string; weatherCoverageEndsAt: string | null;
+  weatherAvailability: 'available' | 'outside-forecast' | 'unavailable';
+  sources: { tides: SourceStatus; weather: SourceStatus };
+}

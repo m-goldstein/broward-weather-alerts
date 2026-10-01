@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { GET as getDashboardResponse } from '../api/dashboard.ts';
+import { GET as getFloodCheckResponse } from '../api/flood-check.ts';
 import { getBasemapTile } from './basemap.ts';
 
 const app = express();
@@ -16,6 +17,12 @@ app.get('/api/basemap', async (req, res) => {
 });
 app.get('/api/dashboard', async (req, res) => {
   const result = await getDashboardResponse(new Request(new URL(req.originalUrl, `${req.protocol}://${req.get('host')}`)));
+  res.status(result.status);
+  result.headers.forEach((value, name) => res.set(name, value));
+  res.send(await result.text());
+});
+app.get('/api/flood-check', async (req, res) => {
+  const result = await getFloodCheckResponse(new Request(new URL(req.originalUrl, `${req.protocol}://${req.get('host')}`)));
   res.status(result.status);
   result.headers.forEach((value, name) => res.set(name, value));
   res.send(await result.text());

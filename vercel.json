@@ -4,6 +4,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
+    "api/flood-check.ts": { "maxDuration": 60 },
     "api/dashboard.ts": { "maxDuration": 60 },
     "api/basemap.ts": { "maxDuration": 30 }
   }

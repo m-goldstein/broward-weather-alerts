@@ -640,6 +640,45 @@ td b { color: #385f85; font-weight: 600; }
   .zip-search-controls { width: 360px; }
 }
 .station-reference { display: flex; align-items: flex-start; gap: 8px; margin: -7px 0 22px; font-size: 12px; line-height: 1.6; color: #526d88; }
+.flood-check { margin-bottom: 24px; }
+.flood-check-form { display: grid; gap: 14px; padding: 22px 20px 0; }
+.flood-check-form label { display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 13px; font-weight: 650; color: #345a7b; }
+.flood-check-form input { width: 100%; min-width: 0; min-height: 48px; padding: 10px 12px; border: 1px solid #b9cce3; border-radius: 8px; background: #fff; color: #18344e; font: inherit; font-size: 16px; }
+.flood-check-form .button { min-height: 48px; }
+.flood-check-help, .flood-check-error { margin: 14px 20px 20px; font-size: 12px; line-height: 1.7; color: #526d88; }
+.flood-check-error { color: #a82e37; }
+.flood-check-result { padding: 0 20px 22px; }
+.flood-verdict { display: flex; align-items: flex-start; gap: 12px; padding: 18px; border-radius: 12px; background: #edf5fc; color: #345a7b; }
+.flood-verdict > svg { flex-shrink: 0; }
+.flood-verdict.possible { background: #fff2df; color: #78531b; }
+.flood-verdict.unknown { background: #eef0f5; color: #4c5a70; }
+.flood-verdict h3 { font-size: 19px; line-height: 1.4; }
+.flood-verdict p { margin-top: 8px; font-size: 13px; line-height: 1.7; }
+.flood-values { display: grid; gap: 16px; margin-top: 20px; }
+.flood-values > div { padding: 18px; border: 1px solid #e0e9f3; border-radius: 10px; }
+.flood-values svg { color: #638fb8; }
+.flood-values h4 { margin-top: 12px; font-size: 13px; font-weight: 600; }
+.flood-values b { display: block; margin-top: 10px; font-size: 25px; color: #345a7b; }
+.flood-values span { display: block; margin-top: 8px; font-size: 12px; color: #526d88; }
+.flood-values p, .flood-check-result > p { margin-top: 14px; font-size: 12px; line-height: 1.8; color: #526d88; }
+.flood-check-result > .flood-incomplete { padding: 12px 14px; border-radius: 8px; background: #fff5e9; color: #78531b; }
+.flood-signals { margin-top: 20px; }
+.flood-signals > div { display: flex; justify-content: space-between; align-items: baseline; gap: 15px; padding: 13px 0; border-bottom: 1px solid #e0e9f3; font-size: 13px; line-height: 1.6; }
+.flood-signals dd { text-align: right; font-weight: 600; }
+.flood-signals .possible { color: #926017; }
+.flood-signals .unknown { color: #65768c; }
+.flood-sources { display: flex; flex-direction: column; gap: 9px; margin: 18px 0; font-size: 11px; line-height: 1.7; color: #526d88; }
+@media (min-width: 600px) {
+  .flood-check-form { grid-template-columns: minmax(100px, .65fr) minmax(240px, 1.6fr); padding-inline: 25px; }
+  .flood-check-form .button { grid-column: 1 / -1; }
+  .flood-check-help, .flood-check-error { margin-inline: 25px; }
+  .flood-check-result { padding-inline: 25px; }
+  .flood-values { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1100px) {
+  .flood-check-form { grid-template-columns: minmax(100px, .65fr) minmax(240px, 1.6fr) auto; align-items: end; }
+  .flood-check-form .button { grid-column: auto; }
+}
 .station-reference svg { flex-shrink: 0; margin-top: 2px; }
 .chart-inspector > span { grid-column: 1 / -1; flex-wrap: wrap; }
 .chart-scrubber input { min-height: 44px; }

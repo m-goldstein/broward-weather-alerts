@@ -43,6 +43,16 @@ No preferences are sent to or stored by the API. Another browser or device start
 
 Provider caches are keyed by ZIP/station and provider URL, independently of personal settings. Threshold and notification calculations run in the browser. No login, database, or additional API key is required for ZIP search.
 
+## Flood check by ZIP and date/time
+
+The **Check flooding for a date & time** form appears above the location search. Enter a five-digit US ZIP and a future date/time in **Eastern time (America/New_York)**, then choose **Check flood outlook**. This lookup is independent of the dashboard ZIP. Results show the actual weekday, estimated tide height in feet MLLW, the nearest high tide within 12 hours, rain amount and probability for the containing hour, and rainfall over that hour plus the next two hours. For example, enter **33160** and **October 2, 2026, 4:00 PM** (Friday; Saturday is October 3).
+
+The `/api/flood-check?zip=33160&at=2026-10-02T20%3A00%3A00.000Z` endpoint accepts an explicit UTC instant. Local and Vercel servers share the same handler. Inputs must be in the future and within 365 days. The browser converts Eastern wall-clock inputs with daylight saving awareness; nonexistent spring-forward times and repeated fall-back times are rejected with an explanation.
+
+NOAA high/low astronomical predictions cover the requested date independently of the seven-day weather horizon. Tide heights between high/low events use cosine interpolation. NWS rainfall remains limited to actual forecast coverage. Outside that coverage, tide results can still appear, while rainfall and the full flood assessment remain incomplete. Missing rain is never treated as zero; cached weather values are shown with their source timestamps and do not establish a current rain hazard assessment.
+
+Separate screening indicators flag a tide at or above the ZIP's saved tide threshold (default **2.3 ft MLLW**), rain of at least **0.25 inches in the containing hour** or **1 inch over the three-hour window**, and their combination. Either tide or heavy rain can flag a potential hazard independently. Rain probability alone is not a flood trigger. These are transparent planning heuristics, not official flood thresholds or a calibrated flood prediction. ZIP 33160 covers multiple communities; the ZIP lookup name and nearby station describe reference points, not a property in Golden Beach. Elevation, drainage, groundwater, surge, and flood depth are not modeled. Results link to official NWS forecasts and warnings.
+
 ## Mobile interface
 
 A fixed Home / Tides / Rain / Outlook / More bar provides direct phone navigation. More opens the calendar, preparation guide, and settings. Tide and hourly rainfall lists use readable cards on phones and tables on desktop. Charts resize to their container and expose a touch and keyboard hour slider. The blue wave identity, safe-area spacing, visible focus states, and reduced-motion support extend across the interface.
@@ -75,3 +85,5 @@ npm run test:e2e
 ```
 
 Unit tests cover missing data, rain interval accounting, tide interpolation, overlap windows, daylight saving dates, serverless API response assembly, ZIP validation, per-location cache isolation, coastal gridded weather fallback, inland tide availability, language defaults, and translation interpolation. API tests use temporary cache directories and fixture providers. Browser tests use fixture forecasts to verify navigation, CSV export, map retry, phone layout, ZIP search errors, reload persistence, settings isolation, and English/Spanish switching across pages and devices. Install a Playwright browser with `npx playwright install chromium` if needed.
+
+Flood-check tests also cover tide-only/rain-only hazards, long-range target-date tides, cached and partial weather, invalid and past dates, Eastern wall-clock conversion in a Pacific browser, daylight saving gaps and repeated hours, live preference updates, and Spanish results on phones down to 320 px wide.
